@@ -15,5 +15,19 @@ python app.py
 ## Run only gunicorn
 
 ```bash
-gunicorn app:app --bind 0.0.0.0:5000 --workers 2 --threads 2 --timeout 120
+gunicorn app:app \
+  --bind 0.0.0.0:5000 \
+  --workers 2 \
+  --threads 2 \
+  --timeout 120 \
+  --access-logfile -
+```
+
+## Run in docker-compose
+
+```bash
+docker-compose build
+docker-compose up -d
+
+docker logs -f gunicorn-app
 ```
