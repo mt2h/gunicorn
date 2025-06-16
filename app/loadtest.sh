@@ -17,7 +17,8 @@ PORT=8080
 
 send_basic_requests() {
   COUNT=$1
-  SLEEP_MS=${2:-250}  # Default 250 ms if not provided
+  SLEEP_MS=${2:-250}
+  WEB_PATH=${3:-/}
 
   if [ -z "$COUNT" ]; then
     echo "Usage: send_basic_requests <number_of_requests> [sleep_ms]"
@@ -26,7 +27,7 @@ send_basic_requests() {
 
   for i in $(seq 1 "$COUNT"); do
     echo "Request #$i"
-    curl -s http://localhost:$PORT
+    curl -s http://localhost:$PORT$WEB_PATH
     echo -e "\n---"
     # Convert ms to seconds for sleep command (e.g. 250ms = 0.25s)
     sleep_sec=$(awk "BEGIN {print $SLEEP_MS/1000}")
