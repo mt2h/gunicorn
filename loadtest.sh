@@ -11,6 +11,10 @@
 #     -> sends 5 requests with 250ms delay between each
 #
 
+# werkzeug -> 5000
+# nginx    -> 8080
+PORT=8080
+
 send_basic_requests() {
   COUNT=$1
   SLEEP_MS=${2:-250}  # Default 250 ms if not provided
@@ -22,7 +26,7 @@ send_basic_requests() {
 
   for i in $(seq 1 "$COUNT"); do
     echo "Request #$i"
-    curl -s http://localhost:5000
+    curl -s http://localhost:$PORT
     echo -e "\n---"
     # Convert ms to seconds for sleep command (e.g. 250ms = 0.25s)
     sleep_sec=$(awk "BEGIN {print $SLEEP_MS/1000}")

@@ -8,3 +8,15 @@ services:
     ports:
       - "5000:5000"
     container_name: gunicorn-app
+
+  nginx:
+      build:
+        context: ./nginx
+        dockerfile: Dockerfile
+      ports:
+        - "8080:80"
+      volumes:
+        - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      container_name: nginx
+      depends_on:
+        - gunicorn

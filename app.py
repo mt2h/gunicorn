@@ -1,7 +1,7 @@
 from werkzeug.wrappers import Request, Response
 from werkzeug.serving import run_simple
-import threading
-import os
+#import threading
+#import os
 
 # Define a simple WSGI application
 def app(environ, start_response):
@@ -9,10 +9,10 @@ def app(environ, start_response):
     method = request.method
     path = request.path
 
-    pid = os.getpid()
-    thread_id = threading.get_ident()
-    thread_name = threading.current_thread().name
-    print(f"[PID {pid}] [ThreadID {thread_id}] [ThreadName {thread_name}] {method} {path}")
+    #pid = os.getpid()
+    #thread_id = threading.get_ident()
+    #thread_name = threading.current_thread().name
+    #print(f"[PID {pid}] [ThreadID {thread_id}] [ThreadName {thread_name}] {method} {path}")
 
     text = f"Hello! You made a {method} request to {path}"
     response = Response(text, content_type='text/plain')
