@@ -13,5 +13,7 @@ CMD ["gunicorn", "app:app", \
      "--threads", "2", \
      "--worker-class", "gthread", \
      "--timeout", "120", \
+     "--log-file", "-", \
      "--access-logfile", "-", \
+     "--error-logfile", "-", \
      "--log-level", "debug"]
