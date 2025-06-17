@@ -21,7 +21,8 @@ def get_connection():
             password=os.getenv('DB_PASSWORD', ''),
             db=os.getenv('DB_NAME', ''),
             port=int(os.getenv('DB_PORT', '3306')),
-            autocommit=False
+			charset='utf8mb4',
+			use_unicode=True
         )
     except pymysql.MySQLError as e:
         logging.error(f"Database connection error: {e}")
@@ -67,13 +68,13 @@ def app(environ, start_response):
 
                 cursor.execute("START TRANSACTION")
 
-                if sleep_time:
-                    try:
-                        sleep_seconds = float(sleep_time)
-                        if sleep_seconds > 0:
-                            time.sleep(sleep_seconds)
-                    except ValueError:
-                        logging.warning(f"[{timestamp}] - Invalid sleep value provided")
+                #if sleep_time:
+                #    try:
+                #        sleep_seconds = float(sleep_time)
+                #        if sleep_seconds > 0:
+                #            time.sleep(sleep_seconds)
+                #    except ValueError:
+                #        logging.warning(f"[{timestamp}] - Invalid sleep value provided")
 
                 worker_id = os.getpid()
                 thread_id = threading.get_ident()
@@ -83,7 +84,33 @@ def app(environ, start_response):
                     f"Sleep parameter: {sleep_time} | Timestamp parameter: {timestamp}"
                 )
 
-                cursor.execute("SELECT id, text, author, category, created_at FROM quotation")
+                #cursor.execute("SELECT id, text, author, category, created_at FROM quotation")
+
+                # WARNING: This is an abomination of a query designed to be extremely slow and resource-intensive.
+                # Run at your own risk. It will severely impact database performance and can cause timeouts.
+
+                cursor.execute("""
+                    SELECT
+                        q1.id, q1.text, q1.author, q1.category, q1.created_at
+                    FROM quotation q1
+                    JOIN quotation q2 ON q1.id <> q2.id
+                    JOIN quotation q3 ON q2.id <> q3.id
+                    JOIN quotation q4 ON q3.id <> q4.id
+                    WHERE
+                        (q1.text LIKE '%a%' OR q1.text LIKE '%e%')
+                        AND (LOWER(q2.author) LIKE CONCAT('%', LOWER(q3.author), '%') OR LENGTH(q4.text) > 10)
+                        AND EXISTS (
+                            SELECT 1 FROM quotation q5
+                            WHERE q5.category = q1.category
+                            AND NOT EXISTS (
+                                SELECT 1 FROM quotation q6
+                                WHERE q6.author = q5.author
+                                AND q6.text LIKE '%z%'
+                            )
+                        )
+                    ORDER BY RAND(), LENGTH(q1.text) + LENGTH(q2.author) DESC;
+                """)
+
                 rows = cursor.fetchall()
 
             conn.commit()

@@ -12,7 +12,7 @@ CMD ["gunicorn", "app:app", \
      "--workers", "2", \
      "--threads", "2", \
      "--worker-class", "gthread", \
-     "--timeout", "120", \
+     "--timeout", "30", \
      "--log-file", "-", \
      "--access-logfile", "-", \
      "--error-logfile", "-", \
