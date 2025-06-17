@@ -60,20 +60,20 @@ def app(environ, start_response):
             response = Response("Database connection error", status=500)
             return response(environ, start_response)
 
-        if sleep_time:
-            try:
-                sleep_seconds = float(sleep_time)
-                if sleep_seconds > 0:
-                    time.sleep(sleep_seconds)
-            except ValueError:
-                logging.warning(f"[{timestamp}] - Invalid sleep value provided")
-
         try:
             with conn.cursor() as cursor:
-                cursor.execute("START TRANSACTION")
-
                 cursor.execute("SELECT CONNECTION_ID()")
                 connection_id = cursor.fetchone()[0]
+
+                cursor.execute("START TRANSACTION")
+
+                if sleep_time:
+                    try:
+                        sleep_seconds = float(sleep_time)
+                        if sleep_seconds > 0:
+                            time.sleep(sleep_seconds)
+                    except ValueError:
+                        logging.warning(f"[{timestamp}] - Invalid sleep value provided")
 
                 worker_id = os.getpid()
                 thread_id = threading.get_ident()

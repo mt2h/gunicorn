@@ -2,7 +2,7 @@
 
 requests() {
   COUNT=$1
-  SLEEP=5
+  SLEEP=15
 
   if [ -z "$COUNT" ]; then
     echo "Usage: requests <number_of_requests>"
