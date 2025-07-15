@@ -12,8 +12,11 @@ CMD ["gunicorn", "app:app", \
      "--workers", "2", \
      "--threads", "2", \
      "--worker-class", "gthread", \
+     "--worker-tmp-dir",  "/dev/shm", \
      "--timeout", "30", \
+     "--graceful-timeout", "5", \
      "--log-file", "-", \
      "--access-logfile", "-", \
      "--error-logfile", "-", \
-     "--log-level", "debug"]
+     "--log-level", "debug", \
+     "--preload"]

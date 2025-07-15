@@ -22,7 +22,8 @@ def get_connection():
             db=os.getenv('DB_NAME', ''),
             port=int(os.getenv('DB_PORT', '3306')),
 			charset='utf8mb4',
-			use_unicode=True
+			use_unicode=True,
+            autocommit=False
         )
     except pymysql.MySQLError as e:
         logging.error(f"Database connection error: {e}")
@@ -33,11 +34,6 @@ def app(environ, start_response):
     request = Request(environ)
     method = request.method
     path = request.path
-
-    #pid = os.getpid()
-    #thread_id = threading.get_ident()
-    #thread_name = threading.current_thread().name
-    #print(f"[PID {pid}] [ThreadID {thread_id}] [ThreadName {thread_name}] {method} {path}")
 
     if path == '/':
         if method == 'GET':
@@ -54,12 +50,12 @@ def app(environ, start_response):
 
         conn = get_connection()
 
-        sleep_time = request.args.get('sleep')
-        timestamp = request.args.get('timestamp')
-
         if not conn:
             response = Response("Database connection error", status=500)
             return response(environ, start_response)
+
+        sleep_time = request.args.get('sleep')
+        timestamp = request.args.get('timestamp')
 
         try:
             with conn.cursor() as cursor:
@@ -68,13 +64,13 @@ def app(environ, start_response):
 
                 cursor.execute("START TRANSACTION")
 
-                #if sleep_time:
-                #    try:
-                #        sleep_seconds = float(sleep_time)
-                #        if sleep_seconds > 0:
-                #            time.sleep(sleep_seconds)
-                #    except ValueError:
-                #        logging.warning(f"[{timestamp}] - Invalid sleep value provided")
+                if sleep_time:
+                    try:
+                        sleep_seconds = float(sleep_time)
+                        if sleep_seconds > 0:
+                            time.sleep(sleep_seconds)
+                    except ValueError:
+                        logging.warning(f"[{timestamp}] - Invalid sleep value provided")
 
                 worker_id = os.getpid()
                 thread_id = threading.get_ident()
@@ -88,7 +84,6 @@ def app(environ, start_response):
 
                 # WARNING: This is an abomination of a query designed to be extremely slow and resource-intensive.
                 # Run at your own risk. It will severely impact database performance and can cause timeouts.
-
                 cursor.execute("""
                     SELECT
                         q1.id, q1.text, q1.author, q1.category, q1.created_at
@@ -108,23 +103,22 @@ def app(environ, start_response):
                                 AND q6.text LIKE '%z%'
                             )
                         )
-                    ORDER BY RAND(), LENGTH(q1.text) + LENGTH(q2.author) DESC;
+                    ORDER BY RAND(), LENGTH(q1.text) + LENGTH(q2.author) DESC
                 """)
 
                 rows = cursor.fetchall()
 
-            conn.commit()
-
-            quotations = [
-                {
+            quotations = []
+            for row in rows:
+                quotations.append({
                     "id": row[0],
                     "text": row[1],
                     "author": row[2],
                     "category": row[3],
                     "created_at": str(row[4])
-                }
-                for row in rows
-            ]
+                })
+
+            conn.commit()
 
             response_body = json.dumps(quotations, indent=2)
             response = Response(response_body, content_type='application/json')
