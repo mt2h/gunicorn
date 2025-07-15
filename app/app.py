@@ -22,8 +22,8 @@ def get_connection():
             db=os.getenv('DB_NAME', ''),
             port=int(os.getenv('DB_PORT', '3306')),
 			charset='utf8mb4',
-			use_unicode=True,
-            autocommit=False
+			use_unicode=True
+            #autocommit=False
         )
     except pymysql.MySQLError as e:
         logging.error(f"Database connection error: {e}")
